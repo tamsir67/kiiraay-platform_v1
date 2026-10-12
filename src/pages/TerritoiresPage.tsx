@@ -150,6 +150,8 @@ export const TerritoiresPage: React.FC<TerritoiresPageProps> = ({
           <div className="text-xs space-y-1 bg-slate-50 p-3 rounded-xl border border-slate-100">
             <div>Coordonnateur communal : <b className="text-slate-900">{activeCommune.coordonnateur}</b></div>
             <div>Téléphone : <b className="text-slate-900 font-mono">{activeCommune.telephoneCoordonnateur}</b></div>
+            <div>Arrondissement : <b className="text-slate-900">{activeCommune.arrondissement || 'Guédiawaye'}</b></div>
+            <div>Population (RGPH 2023) : <b className="text-slate-900">{activeCommune.populationRgph2023 ? `${activeCommune.populationRgph2023.toLocaleString()} hab.` : 'N/C'}</b></div>
             <div>Objectif officiel : <b className="text-emerald-700 font-bold">{activeCommune.objectifMilitants.toLocaleString()} militants</b></div>
           </div>
         </div>
@@ -161,7 +163,7 @@ export const TerritoiresPage: React.FC<TerritoiresPageProps> = ({
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
           <input
             type="text"
-            placeholder="Rechercher un quartier, commissaire..."
+            placeholder="Rechercher un quartier, code, commissaire..."
             value={rechercheQuartier}
             onChange={e => setRechercheQuartier(e.target.value)}
             className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
@@ -196,8 +198,32 @@ export const TerritoiresPage: React.FC<TerritoiresPageProps> = ({
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900">{q.nom}</h3>
-                  <span className="text-[11px] text-slate-500">Superviseur : {q.superviseur || 'Coordination'}</span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {q.codeQuartier && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                        {q.codeQuartier}
+                      </span>
+                    )}
+                    <h3 className="font-bold text-sm text-slate-900">{q.nom}</h3>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                    <span className="text-[11px] text-slate-500">Superviseur : {q.superviseur || 'Coordination'}</span>
+                    {q.typeHabitat && (
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-50 text-[#0284c7] border border-sky-100">
+                        {q.typeHabitat}
+                      </span>
+                    )}
+                    {q.niveau && q.niveau !== 'quartier' && (
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-100 uppercase font-semibold">
+                        {q.niveau}
+                      </span>
+                    )}
+                  </div>
+                  {q.remarque && (
+                    <p className="text-[10px] text-amber-700 italic mt-0.5 line-clamp-1" title={q.remarque}>
+                      ⚠️ {q.remarque}
+                    </p>
+                  )}
                 </div>
                 <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-sky-50 text-[#0284c7] border border-sky-100 font-mono shrink-0">
                   {countMilitants} milit.
@@ -220,7 +246,7 @@ export const TerritoiresPage: React.FC<TerritoiresPageProps> = ({
 
               <div className="text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Commissaire de quartier :</span>
+                  <span className="text-slate-600">Commissaire :</span>
                   {isVacant ? (
                     <span className="inline-flex items-center gap-1 font-bold text-amber-700">
                       <AlertTriangle className="w-3 h-3" />

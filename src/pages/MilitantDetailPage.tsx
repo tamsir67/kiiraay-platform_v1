@@ -280,7 +280,16 @@ export const MilitantDetailPage: React.FC<MilitantDetailPageProps> = ({
               </div>
               <div>
                 <span className="text-slate-500 block text-[11px]">Quartier</span>
-                <span className="font-semibold text-slate-900">{quartier?.nom}</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-semibold text-slate-900">
+                    {quartier?.codeQuartier ? `[${quartier.codeQuartier}] ` : ''}{quartier?.nom}
+                  </span>
+                  {quartier?.typeHabitat && (
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-50 text-[#0284c7] border border-sky-100">
+                      {quartier.typeHabitat}
+                    </span>
+                  )}
+                </div>
               </div>
               <div>
                 <span className="text-slate-500 block text-[11px]">Adresse</span>

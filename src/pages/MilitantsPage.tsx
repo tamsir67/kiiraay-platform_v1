@@ -288,7 +288,9 @@ export const MilitantsPage: React.FC<MilitantsPageProps> = ({
             >
               <option value="tous">Tous les quartiers ({quartiersDisponibles.length})</option>
               {quartiersDisponibles.map(q => (
-                <option key={q.id} value={q.id}>{q.nom}</option>
+                <option key={q.id} value={q.id}>
+                  {q.codeQuartier ? `${q.codeQuartier} — ` : ''}{q.nom}
+                </option>
               ))}
             </select>
           </div>

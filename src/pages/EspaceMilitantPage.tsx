@@ -38,7 +38,7 @@ export const EspaceMilitantPage: React.FC<EspaceMilitantPageProps> = ({
               Bienvenue, {militant.prenom} {militant.nom}
             </h1>
             <p className="text-xs text-sky-200 mt-0.5 font-mono">
-              Matricule : {militant.numeroKry} · {commune?.nom} ({quartier?.nom})
+              Matricule : {militant.numeroKry} · {commune?.nom} ({quartier?.codeQuartier ? `${quartier.codeQuartier} · ` : ''}{quartier?.nom})
             </p>
           </div>
         </div>

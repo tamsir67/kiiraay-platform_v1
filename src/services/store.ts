@@ -22,7 +22,7 @@ function generateInitialMilitants(): Militant[] {
   let counter = 1001;
 
   // Création spécifique du militant de test pour le compte démo
-  const hamo1 = QUARTIERS_GUEDIAWAYE.find(q => q.id === 'glf-hamo-1')!;
+  const premierQuartier = QUARTIERS_GUEDIAWAYE.find(q => q.id === 'gs-01') || QUARTIERS_GUEDIAWAYE[0];
   militants.push({
     id: 'mil-001',
     numeroKry: 'KRY-GDW-2027-01001',
@@ -33,12 +33,12 @@ function generateInitialMilitants(): Militant[] {
     telephone: '+221 77 345 88 12',
     email: 'ndeye.diouf@gmail.com',
     cni: '1752199804128',
-    communeId: 'golf-sud',
-    quartierId: 'glf-hamo-1',
-    adresse: 'Villa N° 45, Hamo 1',
-    repere: 'En face Pharmacie Hamo, près du terrain synthétique',
-    latitude: 14.7825,
-    longitude: -17.4115,
+    communeId: premierQuartier.communeId,
+    quartierId: premierQuartier.id,
+    adresse: `Villa N° 45, ${premierQuartier.nom}`,
+    repere: 'En face Mosquée locale, près de la place publique',
+    latitude: premierQuartier.centre[0],
+    longitude: premierQuartier.centre[1],
     statut: 'actif',
     sourceCollecte: 'Permanence communale',
     fonctionParti: 'Responsable Mouvement des Jeunes',
@@ -54,10 +54,10 @@ function generateInitialMilitants(): Militant[] {
 
   counter++;
 
-  // Générer des militants équitablement répartis sur les 46 quartiers
+  // Générer des militants équitablement répartis sur les 99 quartiers officiels
   QUARTIERS_GUEDIAWAYE.forEach((quartier, qIdx) => {
-    // 2 à 4 militants par quartier pour avoir un panel représentatif d'environ 120-140 militants
-    const count = (qIdx % 3 === 0) ? 3 : 2;
+    // 1 à 2 militants par quartier pour avoir un panel représentatif d'environ 150 militants
+    const count = (qIdx % 2 === 0) ? 2 : 1;
     for (let i = 0; i < count; i++) {
       const isFemme = (counter % 2 === 0);
       const prenom = isFemme ? PRENOMS_F[counter % PRENOMS_F.length] : PRENOMS_H[counter % PRENOMS_H.length];
@@ -254,8 +254,18 @@ class KiiraayStore {
       const storedMessages = localStorage.getItem('kiiraay_messages');
       const storedUser = localStorage.getItem('kiiraay_current_user');
 
-      this.militants = storedMilitants ? JSON.parse(storedMilitants) : generateInitialMilitants();
-      this.quartiers = storedQuartiers ? JSON.parse(storedQuartiers) : [...QUARTIERS_GUEDIAWAYE];
+      const storedVersion = localStorage.getItem('kiiraay_quartiers_version');
+      const needsMigration = storedVersion !== 'v_communes_csv_99' || !storedQuartiers || JSON.parse(storedQuartiers).length !== QUARTIERS_GUEDIAWAYE.length;
+
+      if (needsMigration) {
+        this.quartiers = [...QUARTIERS_GUEDIAWAYE];
+        this.militants = generateInitialMilitants();
+        localStorage.setItem('kiiraay_quartiers_version', 'v_communes_csv_99');
+      } else {
+        this.militants = storedMilitants ? JSON.parse(storedMilitants) : generateInitialMilitants();
+        this.quartiers = storedQuartiers ? JSON.parse(storedQuartiers) : [...QUARTIERS_GUEDIAWAYE];
+      }
+
       this.auditLogs = storedAudit ? JSON.parse(storedAudit) : INITIAL_AUDIT_LOGS;
       this.messages = storedMessages ? JSON.parse(storedMessages) : INITIAL_MESSAGES;
       this.messages = this.messages.map(m => ({
@@ -309,6 +319,7 @@ class KiiraayStore {
     localStorage.removeItem('kiiraay_quartiers');
     localStorage.removeItem('kiiraay_audit');
     localStorage.removeItem('kiiraay_messages');
+    localStorage.setItem('kiiraay_quartiers_version', 'v_communes_csv_99');
     this.militants = generateInitialMilitants();
     this.quartiers = [...QUARTIERS_GUEDIAWAYE];
     this.auditLogs = [...INITIAL_AUDIT_LOGS];

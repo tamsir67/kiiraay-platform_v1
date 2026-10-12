@@ -44,8 +44,8 @@ export const ImportExportPage: React.FC<ImportExportPageProps> = ({
       telephone: '+221 77 910 20 30',
       cni: '2752199907221',
       communeId: 'golf-sud',
-      quartierId: 'glf-hamo-2',
-      adresse: 'Villa 112, Hamo 2',
+      quartierId: 'gs-01',
+      adresse: 'Villa 112, Cité Fadia',
       repere: 'Face Clinique du Golf',
       statutSimulation: 'valide',
       message: 'Ligne valide, aucun doublon détecté'
@@ -59,8 +59,8 @@ export const ImportExportPage: React.FC<ImportExportPageProps> = ({
       telephone: militants[0]?.telephone || '+221 77 345 88 12', // Provoque détection doublon
       cni: '1752199203102',
       communeId: 'sam-notaire',
-      quartierId: 'smn-notaire-1',
-      adresse: 'Rue 10, Cité Notaire',
+      quartierId: 'sn-01',
+      adresse: 'Rue 10, Notaire Est',
       repere: 'Près de la station',
       statutSimulation: 'doublon',
       message: 'Doublon détecté : numéro de téléphone déjà existant dans la base'
@@ -89,8 +89,8 @@ export const ImportExportPage: React.FC<ImportExportPageProps> = ({
       telephone: '+221 76 800 12 34',
       cni: '1752198711049',
       communeId: 'wakhinane-nimzatt',
-      quartierId: 'wkn-nimzatt-1',
-      adresse: 'Rue 3, Nimzatt',
+      quartierId: 'wn-z09',
+      adresse: 'Rue 3, Zone Nimzatt',
       repere: 'Derrière marché Nimzatt',
       statutSimulation: 'valide',
       message: 'Ligne valide, parrainage prêt pour enregistrement'

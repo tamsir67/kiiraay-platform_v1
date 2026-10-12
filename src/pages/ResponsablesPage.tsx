@@ -146,7 +146,16 @@ export const ResponsablesPage: React.FC<ResponsablesPageProps> = ({ currentUser 
 
                 return (
                   <tr key={q.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-900">{q.nom}</td>
+                    <td className="py-3 px-4 font-bold text-slate-900">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {q.codeQuartier && (
+                          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                            {q.codeQuartier}
+                          </span>
+                        )}
+                        <span>{q.nom}</span>
+                      </div>
+                    </td>
                     <td className="py-3 px-4 text-slate-700">{q.superviseur}</td>
                     <td className="py-3 px-4">
                       {isVacant ? (

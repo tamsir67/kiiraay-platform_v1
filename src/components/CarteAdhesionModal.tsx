@@ -104,7 +104,7 @@ export const CarteAdhesionModal: React.FC<CarteAdhesionModalProps> = ({
                 </div>
                 <div className="text-[10px] text-sky-50 mt-1 space-y-0.5 font-medium">
                   <p className="truncate">Commune : <b className="text-white font-bold">{commune?.nom}</b></p>
-                  <p className="truncate">Quartier : <b className="text-white font-bold">{quartier?.nom}</b></p>
+                  <p className="truncate">Quartier : <b className="text-white font-bold">{quartier?.codeQuartier ? `${quartier.codeQuartier} · ` : ''}{quartier?.nom}</b></p>
                   <p>Adhésion : <b className="text-white font-bold">{militant.dateAdhesion}</b></p>
                 </div>
               </div>

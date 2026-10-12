@@ -152,11 +152,17 @@ export const CarteLeaflet: React.FC<CarteLeafletProps> = ({
 
       const marker = L.marker(q.centre, { icon: htmlIcon });
       marker.bindPopup(`
-        <div style="font-size: 12px;">
-          <strong>Quartier : ${q.nom}</strong><br/>
-          <span>Commissaire : <b>${q.commissaire || 'Non pourvu'}</b></span><br/>
-          <span>Tel : ${q.telephoneCommissaire || '—'}</span><br/>
-          <span>Militants : <b>${count}</b> / Objectif ${q.objectif}</span>
+        <div style="font-size: 12px; font-family: sans-serif; line-height: 1.4;">
+          <div style="font-weight: bold; font-size: 13px; color: #0f172a; margin-bottom: 3px;">
+            ${q.codeQuartier ? `[${q.codeQuartier}] ` : ''}${q.nom}
+          </div>
+          ${q.typeHabitat ? `<div style="font-size: 11px; color: #0284c7; margin-bottom: 4px;">${q.typeHabitat}</div>` : ''}
+          <div>Commissaire : <b>${q.commissaire || 'Non pourvu'}</b></div>
+          <div>Superviseur : <b>${q.superviseur || 'Coordination'}</b></div>
+          <div>Contact : <span style="font-family: monospace;">${q.telephoneCommissaire || '—'}</span></div>
+          <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid #e2e8f0; color: #059669; font-weight: 600;">
+            Militants enregistrés : ${count} / Objectif ${q.objectif}
+          </div>
         </div>
       `);
 

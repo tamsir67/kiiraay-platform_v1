@@ -282,7 +282,9 @@ export const InscriptionMilitantModal: React.FC<InscriptionMilitantModalProps> =
                   className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-600"
                 >
                   {quartiersDisponibles.map(q => (
-                    <option key={q.id} value={q.id}>{q.nom}</option>
+                    <option key={q.id} value={q.id}>
+                      {q.codeQuartier ? `${q.codeQuartier} — ` : ''}{q.nom}
+                    </option>
                   ))}
                 </select>
               </div>

@@ -21,10 +21,15 @@ export interface Commune {
   description: string;
   couleur: string;
   centre: [number, number]; // [lat, lng]
+  populationRgph2023?: number;
+  arrondissement?: string;
+  nbQuartiersAnnonce?: number;
+  nbQuartiersRepertoire?: number;
 }
 
 export interface Quartier {
   id: string;
+  codeQuartier?: string;
   communeId: string;
   nom: string;
   commissaire: string;
@@ -32,6 +37,10 @@ export interface Quartier {
   superviseur: string;
   centre: [number, number];
   objectif: number;
+  typeHabitat?: string;
+  niveau?: string;
+  remarque?: string;
+  source?: string;
 }
 
 export interface Secteur {
