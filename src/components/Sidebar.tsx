@@ -39,6 +39,7 @@ interface SidebarProps {
   nbEnAttente?: number;
   onResetData: () => void;
   onOpenInscription?: () => void;
+  onOpenInstallModal?: () => void;
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
 }
@@ -52,6 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   nbEnAttente = 0,
   onResetData,
   onOpenInscription,
+  onOpenInstallModal,
   isMobileOpen = false,
   onCloseMobile
 }) => {
@@ -73,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'qualite', label: 'Qualité des données', icon: ShieldAlert, badge: nbAlertes, visible: !isMilitant && currentUser.role !== 'decideur' },
     { id: 'import_export', label: 'Import / Export', icon: FileSpreadsheet, visible: !isMilitant && currentUser.role !== 'decideur' },
     { id: 'audit', label: 'Journal d’audit SHA-256', icon: FileLock2, visible: currentUser.role === 'admin' },
-    { id: 'messagerie', label: 'Messagerie interne', icon: MessageSquare, badge: nbMessagesNonLus, visible: true },
+    { id: 'messagerie', label: 'Messagerie interne', icon: MessageSquare, badge: nbMessagesNonLus, visible: !isMilitant },
     { id: 'espace_militant', label: 'Mon Espace Militant', icon: CreditCard, visible: isMilitant || currentUser.role === 'admin' }
   ];
 
@@ -183,20 +185,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Pied de barre latérale */}
       <div className="p-3 border-t border-white/20 bg-black/10 space-y-2 mt-auto">
-        <button
-          onClick={() => {
-            onResetData();
-            if (onCloseMobile) onCloseMobile();
-          }}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-[11px] font-semibold text-white/90 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors border border-white/20"
-          title="Réinitialiser la base locale aux valeurs d'usine"
-        >
-          <RotateCcw className="w-3.5 h-3.5 text-sky-200" />
-          <span>Réinitialiser les données</span>
-        </button>
+        {onOpenInstallModal && (
+          <button
+            onClick={() => {
+              onOpenInstallModal();
+              if (onCloseMobile) onCloseMobile();
+            }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-[11px] font-bold text-white bg-white/20 hover:bg-white/30 rounded-xl transition-colors border border-white/30 shadow-xs"
+            title="Installer l'application sur smartphone ou tablette"
+          >
+            <span>📲 Installer sur Mobile</span>
+          </button>
+        )}
+
+        {!isMilitant && (
+          <button
+            onClick={() => {
+              onResetData();
+              if (onCloseMobile) onCloseMobile();
+            }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-1.5 text-[10px] font-semibold text-white/80 hover:text-white bg-white/10 hover:bg-white/15 rounded-lg transition-colors border border-white/10"
+            title="Réinitialiser la base locale aux valeurs d'usine"
+          >
+            <RotateCcw className="w-3 h-3 text-sky-200" />
+            <span>Réinitialiser les données</span>
+          </button>
+        )}
 
         <div className="px-2 pt-1 text-[10px] text-sky-100/90 leading-tight text-center">
-          Loi sénégalaise 2008-12 · Conforme CDP
+          {isMilitant ? 'Espace personnel sécurisé' : 'Loi sénégalaise 2008-12 · Conforme CDP'}
         </div>
       </div>
     </>

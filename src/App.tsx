@@ -22,12 +22,13 @@ import { CarteAdhesionModal } from './components/CarteAdhesionModal';
 import { PublicVerifyModal } from './components/PublicVerifyModal';
 import { MilitantFormModal } from './components/MilitantFormModal';
 import { InscriptionMilitantModal } from './components/InscriptionMilitantModal';
+import { InstallAppModal } from './components/InstallAppModal';
 
 import { store } from './services/store';
 import { Militant, Utilisateur, StatutMilitant } from './types';
 import { COMMUNES_GUEDIAWAYE } from './data/referentiel';
 import { maskTelephone } from './services/crypto';
-import { LayoutDashboard, Users, Map, MapPin, Menu, CreditCard, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Users, Map, MapPin, Menu, CreditCard, MessageSquare, Download, UserPlus } from 'lucide-react';
 
 export default function App() {
   // Synchronisation réactive avec le store local
@@ -68,7 +69,30 @@ export default function App() {
     militant: null
   });
   const [inscriptionModalOpen, setInscriptionModalOpen] = useState(false);
+  const [installModalOpen, setInstallModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Verrouillage de sécurité : le rôle militant ne peut STRICTEMENT accéder qu'à son propre espace
+  useEffect(() => {
+    if (currentUser.role === 'militant') {
+      if (activeTab !== 'espace_militant') {
+        setActiveTab('espace_militant');
+      }
+      if (selectedMilitantId !== null) {
+        setSelectedMilitantId(null);
+      }
+    }
+  }, [currentUser.role, activeTab, selectedMilitantId]);
+
+  // Sélecteur d'onglet sécurisé avec contrôle strict des rôles
+  const handleSelectTab = (tab: TabId) => {
+    if (currentUser.role === 'militant' && tab !== 'espace_militant') {
+      return; // Bloqué pour le militant (accès interdit aux autres espaces)
+    }
+    setActiveTab(tab);
+    setSelectedMilitantId(null);
+    setMobileMenuOpen(false);
+  };
 
   // Basculer d'utilisateur
   const handleSwitchUser = (user: Utilisateur) => {
@@ -79,6 +103,26 @@ export default function App() {
     } else if (activeTab === 'espace_militant') {
       setActiveTab('dashboard');
     }
+  };
+
+  // Connexion automatique à l'Espace Militant après auto-inscription
+  const handleAccessEspaceMilitant = (newMil: Militant) => {
+    const userMil: Utilisateur = {
+      id: `user-${newMil.id}`,
+      identifiant: newMil.numeroKry.toLowerCase(),
+      nomComplet: `${newMil.prenom} ${newMil.nom}`,
+      role: 'militant',
+      email: newMil.email || `${newMil.prenom.toLowerCase()}.${newMil.nom.toLowerCase()}@kiiraay.sn`,
+      telephone: newMil.telephone,
+      communeId: newMil.communeId,
+      quartierIds: [newMil.quartierId],
+      militantId: newMil.id,
+      actif: true
+    };
+    store.setCurrentUser(userMil);
+    setActiveTab('espace_militant');
+    setSelectedMilitantId(null);
+    setInscriptionModalOpen(false);
   };
 
   const handleSelectMilitant = (m: Militant) => {
@@ -212,6 +256,7 @@ export default function App() {
         onSwitchUser={handleSwitchUser}
         activeTabTitle={selectedMilitantId ? 'Fiche Militant' : getTabTitle(activeTab)}
         onOpenInscription={() => setInscriptionModalOpen(true)}
+        onOpenInstallModal={() => setInstallModalOpen(true)}
         mobileMenuOpen={mobileMenuOpen}
         onToggleMobileMenu={() => setMobileMenuOpen(v => !v)}
       />
@@ -220,17 +265,14 @@ export default function App() {
         {/* Barre latérale responsive (desktop + drawer mobile) */}
         <Sidebar
           activeTab={activeTab}
-          onSelectTab={(tab) => {
-            setActiveTab(tab);
-            setSelectedMilitantId(null);
-            setMobileMenuOpen(false);
-          }}
+          onSelectTab={handleSelectTab}
           currentUser={currentUser}
           nbAlertes={nbAlertes}
           nbMessagesNonLus={nbMessagesNonLus}
           nbEnAttente={nbEnAttente}
           onResetData={handleResetData}
           onOpenInscription={() => setInscriptionModalOpen(true)}
+          onOpenInstallModal={() => setInstallModalOpen(true)}
           isMobileOpen={mobileMenuOpen}
           onCloseMobile={() => setMobileMenuOpen(false)}
         />
@@ -341,9 +383,10 @@ export default function App() {
                   currentUser={currentUser}
                   onOpenCardModal={(m) => setCardModalMilitant(m)}
                   onNavigateTab={(tab) => {
-                    setActiveTab(tab);
-                    setSelectedMilitantId(null);
+                    handleSelectTab(tab);
                   }}
+                  onOpenInscription={() => setInscriptionModalOpen(true)}
+                  onOpenInstallModal={() => setInstallModalOpen(true)}
                 />
               )}
             </>
@@ -356,7 +399,7 @@ export default function App() {
         {currentUser.role === 'militant' ? (
           <>
             <button
-              onClick={() => { setActiveTab('espace_militant'); setSelectedMilitantId(null); }}
+              onClick={() => handleSelectTab('espace_militant')}
               className={`flex flex-col items-center justify-center p-1.5 rounded-lg text-[10px] font-semibold transition-colors ${
                 activeTab === 'espace_militant' ? 'text-[#0284c7] font-bold' : 'text-slate-600 hover:text-slate-900'
               }`}
@@ -365,16 +408,18 @@ export default function App() {
               <span>Mon Espace</span>
             </button>
             <button
-              onClick={() => { setActiveTab('messagerie'); setSelectedMilitantId(null); }}
-              className={`relative flex flex-col items-center justify-center p-1.5 rounded-lg text-[10px] font-semibold transition-colors ${
-                activeTab === 'messagerie' ? 'text-[#0284c7] font-bold' : 'text-slate-600 hover:text-slate-900'
-              }`}
+              onClick={() => setInscriptionModalOpen(true)}
+              className="flex flex-col items-center justify-center p-1.5 rounded-lg text-[10px] font-semibold text-slate-600 hover:text-slate-900 transition-colors"
             >
-              <MessageSquare className="w-5 h-5 mb-0.5" />
-              <span>Messages</span>
-              {nbMessagesNonLus > 0 && (
-                <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
-              )}
+              <UserPlus className="w-5 h-5 mb-0.5 text-rose-500" />
+              <span>Adhésion</span>
+            </button>
+            <button
+              onClick={() => setInstallModalOpen(true)}
+              className="flex flex-col items-center justify-center p-1.5 rounded-lg text-[10px] font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              <Download className="w-5 h-5 mb-0.5 text-sky-600" />
+              <span>Installer</span>
             </button>
           </>
         ) : (
@@ -466,8 +511,14 @@ export default function App() {
             const created = store.inscrireMilitant(data);
             return created;
           }}
+          onAccessEspace={handleAccessEspaceMilitant}
           onClose={() => setInscriptionModalOpen(false)}
         />
+      )}
+
+      {/* Modal d'installation PWA sur mobile et tablette */}
+      {installModalOpen && (
+        <InstallAppModal onClose={() => setInstallModalOpen(false)} />
       )}
     </div>
   );

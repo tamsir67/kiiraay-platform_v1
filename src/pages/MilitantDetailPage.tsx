@@ -301,10 +301,19 @@ export const MilitantDetailPage: React.FC<MilitantDetailPageProps> = ({
               </div>
               <div>
                 <span className="text-slate-500 block text-[11px]">Coordonnées GPS</span>
-                <span className="font-mono text-slate-600">
-                  {militant.latitude && militant.longitude 
-                    ? `${militant.latitude.toFixed(4)}, ${militant.longitude.toFixed(4)}`
-                    : 'Non géolocalisé'}
+                <span className="font-mono text-slate-800 font-semibold flex items-center gap-1.5 flex-wrap">
+                  {militant.latitude && militant.longitude ? (
+                    <>
+                      <span>{militant.latitude.toFixed(6)}, {militant.longitude.toFixed(6)}</span>
+                      {militant.sourceGps === 'appareil' && (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-sans">
+                          GPS Appareil {militant.precisionGps ? `(±${militant.precisionGps}m)` : ''}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-slate-400 italic">Non géolocalisé</span>
+                  )}
                 </span>
               </div>
             </div>

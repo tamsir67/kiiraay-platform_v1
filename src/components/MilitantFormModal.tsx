@@ -31,6 +31,10 @@ export const MilitantFormModal: React.FC<MilitantFormModalProps> = ({
   const [repere, setRepere] = useState(militantInitial?.repere || '');
   const [latitude, setLatitude] = useState<number>(militantInitial?.latitude || 14.7785);
   const [longitude, setLongitude] = useState<number>(militantInitial?.longitude || -17.4082);
+  const [precisionGps, setPrecisionGps] = useState<number | undefined>(militantInitial?.precisionGps);
+  const [sourceGps, setSourceGps] = useState<'appareil' | 'quartier_referentiel' | 'manuel'>(militantInitial?.sourceGps || 'quartier_referentiel');
+  const [isLocating, setIsLocating] = useState(false);
+  const [gpsMsg, setGpsMsg] = useState<string | null>(null);
 
   const [statut, setStatut] = useState<StatutMilitant>(militantInitial?.statut || 'actif');
   const [sourceCollecte, setSourceCollecte] = useState(militantInitial?.sourceCollecte || SOURCES_COLLECTE[0]);
@@ -92,6 +96,8 @@ export const MilitantFormModal: React.FC<MilitantFormModalProps> = ({
       repere: repere.trim() || 'À proximité de la grande rue',
       latitude: Number(latitude) || 0,
       longitude: Number(longitude) || 0,
+      precisionGps: precisionGps ?? undefined,
+      sourceGps,
       statut,
       sourceCollecte,
       fonctionParti,
@@ -282,44 +288,99 @@ export const MilitantFormModal: React.FC<MilitantFormModalProps> = ({
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <div className="flex-1">
-                  <label className="block text-[11px] text-slate-700">Latitude GPS</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={latitude}
-                    onChange={e => setLatitude(parseFloat(e.target.value))}
-                    className="w-full text-xs px-3 py-1.5 font-mono rounded-lg border border-slate-300"
-                  />
+              <div className="md:col-span-2 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-sky-700" />
+                    Coordonnées GPS géographiques
+                  </span>
+                  <span className="text-[10px] text-slate-600 font-medium">Optionnel</span>
                 </div>
-                <div className="flex-1">
-                  <label className="block text-[11px] text-slate-700">Longitude GPS</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={longitude}
-                    onChange={e => setLongitude(parseFloat(e.target.value))}
-                    className="w-full text-xs px-3 py-1.5 font-mono rounded-lg border border-slate-300"
-                  />
-                </div>
-              </div>
 
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const q = store.getQuartierById(quartierId);
-                    if (q) {
-                      setLatitude(q.centre[0]);
-                      setLongitude(q.centre[1]);
-                    }
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-                >
-                  <MapPin className="w-3.5 h-3.5 text-emerald-800" />
-                  <span>Centrer sur le quartier</span>
-                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[11px] text-slate-700 mb-0.5">Latitude</label>
+                    <input
+                      type="number"
+                      step="0.000001"
+                      value={latitude}
+                      onChange={e => {
+                        setLatitude(parseFloat(e.target.value) || 0);
+                        setSourceGps('manuel');
+                      }}
+                      className="w-full text-xs px-3 py-1.5 font-mono rounded-lg border border-slate-300 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-700 mb-0.5">Longitude</label>
+                    <input
+                      type="number"
+                      step="0.000001"
+                      value={longitude}
+                      onChange={e => {
+                        setLongitude(parseFloat(e.target.value) || 0);
+                        setSourceGps('manuel');
+                      }}
+                      className="w-full text-xs px-3 py-1.5 font-mono rounded-lg border border-slate-300 bg-white"
+                    />
+                  </div>
+                </div>
+
+                {gpsMsg && (
+                  <p className="text-[11px] text-emerald-800 font-semibold bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                    {gpsMsg}
+                  </p>
+                )}
+
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    disabled={isLocating}
+                    onClick={() => {
+                      if (!navigator.geolocation) {
+                        setGpsMsg("La géolocalisation n'est pas disponible sur ce navigateur.");
+                        return;
+                      }
+                      setIsLocating(true);
+                      navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                          setIsLocating(false);
+                          setLatitude(Number(pos.coords.latitude.toFixed(6)));
+                          setLongitude(Number(pos.coords.longitude.toFixed(6)));
+                          setPrecisionGps(Math.round(pos.coords.accuracy));
+                          setSourceGps('appareil');
+                          setGpsMsg(`Position de l'appareil capturée : ±${Math.round(pos.coords.accuracy)}m de précision`);
+                        },
+                        (err) => {
+                          setIsLocating(false);
+                          setGpsMsg(`Erreur GPS : ${err.message}`);
+                        },
+                        { enableHighAccuracy: true, timeout: 10000 }
+                      );
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-sky-700 hover:bg-sky-800 disabled:bg-slate-400 rounded-lg shadow-2xs transition-colors"
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-rose-300" />
+                    <span>{isLocating ? 'Capture GPS...' : '📍 Capturer la position de cet appareil'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const q = store.getQuartierById(quartierId);
+                      if (q) {
+                        setLatitude(q.centre[0]);
+                        setLongitude(q.centre[1]);
+                        setSourceGps('quartier_referentiel');
+                        setPrecisionGps(undefined);
+                        setGpsMsg(`Coordonnées réinitialisées au centre du quartier ${q.nom}`);
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+                  >
+                    <span>Centrer sur quartier</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

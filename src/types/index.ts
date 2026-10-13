@@ -67,6 +67,8 @@ export interface Militant {
   repere: string; // Ex: En face Mosquée Thierno, près boulangerie
   latitude: number;
   longitude: number;
+  precisionGps?: number; // Précision en mètres retournée par le GPS de l'appareil
+  sourceGps?: 'appareil' | 'quartier_referentiel' | 'manuel';
   statut: StatutMilitant;
   motifDesactivation?: string;
   sourceCollecte: string; // Porte-à-porte, Meeting, Réseaux sociaux, Parrainage, Permanence

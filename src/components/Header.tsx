@@ -9,6 +9,7 @@ interface HeaderProps {
   onSwitchUser: (user: Utilisateur) => void;
   activeTabTitle: string;
   onOpenInscription?: () => void;
+  onOpenInstallModal?: () => void;
   mobileMenuOpen?: boolean;
   onToggleMobileMenu?: () => void;
 }
@@ -18,10 +19,12 @@ export const Header: React.FC<HeaderProps> = ({
   onSwitchUser, 
   activeTabTitle,
   onOpenInscription,
+  onOpenInstallModal,
   mobileMenuOpen,
   onToggleMobileMenu
 }) => {
   const [menuOuvert, setMenuOuvert] = useState(false);
+  const isMilitant = currentUser.role === 'militant';
 
   const getRoleLabel = (role: string) => {
     switch (role) {
@@ -50,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
       return 'Hamo 1 (Golf Sud)';
     }
     if (user.role === 'militant') {
-      return 'Fiche personnelle & messagerie';
+      return 'Fiche personnelle & inscription uniquement';
     }
     return '';
   };
@@ -81,6 +84,12 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="hidden sm:inline-block text-[11px] font-bold text-[#0284c7] bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
             GUÉDIAWAYE 2027
           </span>
+
+          {isMilitant && (
+            <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+              🔒 Espace Militant Cloisonné
+            </span>
+          )}
         </div>
 
         {/* Zone 2: Navigation & Fil d'Ariane (affiché sur grands écrans) */}
@@ -90,8 +99,19 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="font-semibold text-slate-900">{activeTabTitle}</span>
         </div>
 
-        {/* Zone 3: Bouton Adhésion & Profil utilisateur */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        {/* Zone 3: Boutons PWA, Inscription & Profil utilisateur */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {onOpenInstallModal && (
+            <button
+              onClick={onOpenInstallModal}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200"
+              title="Installer l'application sur smartphone ou tablette"
+            >
+              <span>📲</span>
+              <span className="hidden md:inline">Installer l'App</span>
+            </button>
+          )}
+
           {onOpenInscription && (
             <button
               onClick={onOpenInscription}
@@ -130,9 +150,46 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="px-4 py-2 border-b border-slate-100">
                   <p className="text-xs font-semibold text-slate-900">Changer de compte de test</p>
                   <p className="text-[11px] text-slate-600 mt-0.5">
-                    Testez les 6 profils et leurs règles d'accès (CDC §4)
+                    Testez les profils et les permissions d'accès
                   </p>
                 </div>
+
+                {/* Si on est en mode militant, un bouton rapide pour basculer en admin */}
+                {isMilitant ? (
+                  <div className="p-2.5 mx-2 my-1 bg-amber-50 border border-amber-200 rounded-lg text-amber-950 text-xs">
+                    <p className="font-bold text-[11px]">Mode Militant Actif (Accès Cloisonné)</p>
+                    <p className="text-[10px] text-amber-800 mt-0.5">
+                      Les autres espaces (Dashboard, Militants, etc.) sont bloqués pour ce profil.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const adminUser = DEMO_USERS.find(u => u.role === 'admin') || DEMO_USERS[0];
+                        onSwitchUser(adminUser);
+                        setMenuOuvert(false);
+                      }}
+                      className="mt-2 w-full py-1.5 px-2 bg-sky-700 hover:bg-sky-800 text-white font-bold text-[11px] rounded-md transition-colors"
+                    >
+                      👑 Revenir au mode Administrateur Central
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-2 mx-2 my-1 bg-sky-50 border border-sky-200 rounded-lg text-sky-950 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const milUser = DEMO_USERS.find(u => u.role === 'militant');
+                        if (milUser) {
+                          onSwitchUser(milUser);
+                          setMenuOuvert(false);
+                        }
+                      }}
+                      className="w-full py-1.5 px-2 bg-sky-700 hover:bg-sky-800 text-white font-bold text-[11px] rounded-md transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <span>📱 Tester le Mode Militant (Mobile)</span>
+                    </button>
+                  </div>
+                )}
 
                 <div className="max-h-80 overflow-y-auto py-1">
                   {DEMO_USERS.map((user) => {
