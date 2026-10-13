@@ -6,7 +6,8 @@ import {
   DoublonDetecte, 
   Utilisateur, 
   MessageDiscussion,
-  StatutMilitant 
+  StatutMilitant,
+  Role
 } from '../types';
 import { COMMUNES_GUEDIAWAYE, QUARTIERS_GUEDIAWAYE, DEMO_USERS } from '../data/referentiel';
 import { calculateSha256, fastHash, generateSecureToken } from './crypto';
@@ -232,13 +233,175 @@ const INITIAL_MESSAGES: MessageDiscussion[] = [
   }
 ];
 
+export function generateInitialUsers(): Utilisateur[] {
+  const users: Utilisateur[] = [
+    {
+      id: 'user-admin',
+      identifiant: 'admin',
+      nomComplet: 'Mouhamadou Mansour Sy',
+      role: 'admin',
+      email: 'admin.central@kiiraay.sn',
+      telephone: '+221 77 600 00 01',
+      actif: true,
+      motDePasse: 'pass123',
+      dateCreation: '2026-01-01',
+      derniereConnexion: '2026-10-13 10:00'
+    },
+    {
+      id: 'user-coord-golfsud',
+      identifiant: 'coord.golfsud',
+      nomComplet: 'Ousmane Sall',
+      role: 'coordonnateur',
+      email: 'coord.golfsud@kiiraay.sn',
+      telephone: '+221 77 645 12 34',
+      communeId: 'golf-sud',
+      actif: true,
+      motDePasse: 'pass123',
+      dateCreation: '2026-01-05',
+      derniereConnexion: '2026-10-12 18:30'
+    },
+    {
+      id: 'user-coord-medinagounass',
+      identifiant: 'coord.medinagounass',
+      nomComplet: 'Babacar Seck',
+      role: 'coordonnateur',
+      email: 'coord.medinagounass@kiiraay.sn',
+      telephone: '+221 77 512 88 44',
+      communeId: 'medina-gounass',
+      actif: true,
+      motDePasse: 'pass123',
+      dateCreation: '2026-01-05'
+    },
+    {
+      id: 'user-coord-ndiareme',
+      identifiant: 'coord.ndiareme',
+      nomComplet: 'Mamadou Lamine Diallo',
+      role: 'coordonnateur',
+      email: 'coord.ndiareme@kiiraay.sn',
+      telephone: '+221 77 430 19 82',
+      communeId: 'ndiareme-limamoulaye',
+      actif: true,
+      motDePasse: 'pass123',
+      dateCreation: '2026-01-05'
+    },
+    {
+      id: 'user-coord-samnotaire',
+      identifiant: 'coord.samnotaire',
+      nomComplet: 'Cheikh Tidiane Bâ',
+      role: 'coordonnateur',
+      email: 'coord.samnotaire@kiiraay.sn',
+      telephone: '+221 78 301 44 55',
+      communeId: 'sam-notaire',
+      actif: true,
+      motDePasse: 'pass123',
+      dateCreation: '2026-01-05'
+    },
+    {
+      id: 'user-coord-wakhinane',
+      identifiant: 'coord.wakhinane',
+      nomComplet: 'Aïssatou Sow',
+      role: 'coordonnateur',
+      email: 'coord.wakhinane@kiiraay.sn',
+      telephone: '+221 76 680 77 11',
+      communeId: 'wakhinane-nimzatt',
+      actif: true,
+      motDePasse: 'pass123',
+      dateCreation: '2026-01-05'
+    },
+    {
+      id: 'user-sup-golfsud',
+      identifiant: 'sup.golfsud',
+      nomComplet: 'Abdoulaye Wade Thiam',
+      role: 'superviseur',
+      email: 'sup.golfsud@kiiraay.sn',
+      telephone: '+221 77 555 11 22',
+      communeId: 'golf-sud',
+      quartierIds: ['gs-01', 'gs-02', 'gs-03', 'gs-04', 'gs-05'],
+      actif: true,
+      motDePasse: 'pass123',
+      dateCreation: '2026-01-10'
+    },
+    {
+      id: 'user-commissaire-fadia',
+      identifiant: 'commissaire.fadia',
+      nomComplet: 'Ibrahima Ndiaye',
+      role: 'commissaire',
+      email: 'commissaire.fadia@kiiraay.sn',
+      telephone: '+221 77 201 11 22',
+      communeId: 'golf-sud',
+      quartierIds: ['gs-01'],
+      actif: true,
+      motDePasse: 'pass123',
+      dateCreation: '2026-01-12'
+    },
+    {
+      id: 'user-saisie',
+      identifiant: 'saisie',
+      nomComplet: 'Aminata Badiane',
+      role: 'saisie',
+      email: 'saisie@kiiraay.sn',
+      telephone: '+221 76 400 90 90',
+      actif: true,
+      motDePasse: 'pass123',
+      dateCreation: '2026-01-15'
+    },
+    {
+      id: 'user-decideur',
+      identifiant: 'decideur',
+      nomComplet: 'Dr. Cheikh Anta Diop Junior',
+      role: 'decideur',
+      email: 'decideur.comite@kiiraay.sn',
+      telephone: '+221 70 800 12 34',
+      actif: true,
+      motDePasse: 'pass123',
+      dateCreation: '2026-01-15'
+    },
+    {
+      id: 'user-militant',
+      identifiant: 'militant.demo',
+      nomComplet: 'Ndeye Astou Diouf',
+      role: 'militant',
+      email: 'ndeye.diouf@gmail.com',
+      telephone: '+221 77 345 88 12',
+      communeId: 'golf-sud',
+      quartierIds: ['gs-01'],
+      militantId: 'mil-001',
+      actif: true,
+      motDePasse: 'pass123',
+      dateCreation: '2026-02-01'
+    }
+  ];
+
+  // Intégrer les commissaires de quartier réels de Guédiawaye
+  QUARTIERS_GUEDIAWAYE.forEach(q => {
+    if (q.commissaire && q.commissaire !== 'Non pourvu' && !users.some(u => u.nomComplet === q.commissaire)) {
+      users.push({
+        id: `user-comm-${q.id}`,
+        identifiant: `commissaire.${q.id}`,
+        nomComplet: q.commissaire,
+        role: 'commissaire',
+        email: `${q.commissaire.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '.')}@kiiraay.sn`,
+        telephone: q.telephoneCommissaire || '+221 77 000 00 00',
+        communeId: q.communeId,
+        quartierIds: [q.id],
+        actif: true,
+        motDePasse: 'pass123',
+        dateCreation: '2026-02-10'
+      });
+    }
+  });
+
+  return users;
+}
+
 // Storage state
 class KiiraayStore {
   private militants: Militant[] = [];
   private quartiers: Quartier[] = [];
   private auditLogs: AuditEntry[] = [];
   private messages: MessageDiscussion[] = [];
-  private currentUser: Utilisateur = DEMO_USERS[0]; // Admin by default
+  private users: Utilisateur[] = [];
+  private currentUser: Utilisateur | null = null;
   private historiqueModifs: HistoriqueModification[] = [];
   private listeners: Set<() => void> = new Set();
 
@@ -252,7 +415,9 @@ class KiiraayStore {
       const storedQuartiers = localStorage.getItem('kiiraay_quartiers');
       const storedAudit = localStorage.getItem('kiiraay_audit');
       const storedMessages = localStorage.getItem('kiiraay_messages');
+      const storedUsers = localStorage.getItem('kiiraay_users');
       const storedUser = localStorage.getItem('kiiraay_current_user');
+      const isSessionActive = localStorage.getItem('kiiraay_session_active');
 
       const storedVersion = localStorage.getItem('kiiraay_quartiers_version');
       const needsMigration = storedVersion !== 'v_communes_csv_99' || !storedQuartiers || JSON.parse(storedQuartiers).length !== QUARTIERS_GUEDIAWAYE.length;
@@ -266,6 +431,7 @@ class KiiraayStore {
         this.quartiers = storedQuartiers ? JSON.parse(storedQuartiers) : [...QUARTIERS_GUEDIAWAYE];
       }
 
+      this.users = storedUsers ? JSON.parse(storedUsers) : generateInitialUsers();
       this.auditLogs = storedAudit ? JSON.parse(storedAudit) : INITIAL_AUDIT_LOGS;
       this.messages = storedMessages ? JSON.parse(storedMessages) : INITIAL_MESSAGES;
       this.messages = this.messages.map(m => ({
@@ -274,20 +440,29 @@ class KiiraayStore {
         destinataireNom: m.destinataireNom.replace('Ousmane Sonko Sall', 'Ousmane Sall')
       }));
 
-      if (storedUser) {
+      if (isSessionActive === 'true' && storedUser) {
         const parsed = JSON.parse(storedUser);
-        const found = DEMO_USERS.find(u => u.id === parsed.id);
-        if (found) {
-          this.currentUser = found;
-        } else if (parsed.nomComplet === 'Ousmane Sonko Sall') {
-          this.currentUser = { ...parsed, nomComplet: 'Ousmane Sall' };
-        }
+        const found = this.users.find(u => u.id === parsed.id) || parsed;
+        this.currentUser = found;
+      } else if (storedUser && isSessionActive === null) {
+        // Migration d'ancienne session
+        const parsed = JSON.parse(storedUser);
+        const found = this.users.find(u => u.id === parsed.id) || parsed;
+        this.currentUser = found;
+        localStorage.setItem('kiiraay_session_active', 'true');
+      } else if (isSessionActive === 'false') {
+        this.currentUser = null;
+      } else {
+        // Premier chargement sans session explicite : initialiser sur l'admin pour faciliter l'accès initial, tout en permettant la déconnexion
+        this.currentUser = this.users[0] || null;
       }
     } catch {
       this.militants = generateInitialMilitants();
       this.quartiers = [...QUARTIERS_GUEDIAWAYE];
+      this.users = generateInitialUsers();
       this.auditLogs = INITIAL_AUDIT_LOGS;
       this.messages = INITIAL_MESSAGES;
+      this.currentUser = null;
     }
     this.save();
   }
@@ -296,9 +471,16 @@ class KiiraayStore {
     try {
       localStorage.setItem('kiiraay_militants', JSON.stringify(this.militants));
       localStorage.setItem('kiiraay_quartiers', JSON.stringify(this.quartiers));
+      localStorage.setItem('kiiraay_users', JSON.stringify(this.users));
       localStorage.setItem('kiiraay_audit', JSON.stringify(this.auditLogs));
       localStorage.setItem('kiiraay_messages', JSON.stringify(this.messages));
-      localStorage.setItem('kiiraay_current_user', JSON.stringify(this.currentUser));
+      if (this.currentUser) {
+        localStorage.setItem('kiiraay_current_user', JSON.stringify(this.currentUser));
+        localStorage.setItem('kiiraay_session_active', 'true');
+      } else {
+        localStorage.removeItem('kiiraay_current_user');
+        localStorage.setItem('kiiraay_session_active', 'false');
+      }
     } catch {
       // Storage unavailable or quota reached
     }
@@ -319,23 +501,285 @@ class KiiraayStore {
     localStorage.removeItem('kiiraay_quartiers');
     localStorage.removeItem('kiiraay_audit');
     localStorage.removeItem('kiiraay_messages');
+    localStorage.removeItem('kiiraay_users');
+    localStorage.removeItem('kiiraay_current_user');
+    localStorage.removeItem('kiiraay_session_active');
     localStorage.setItem('kiiraay_quartiers_version', 'v_communes_csv_99');
     this.militants = generateInitialMilitants();
     this.quartiers = [...QUARTIERS_GUEDIAWAYE];
+    this.users = generateInitialUsers();
     this.auditLogs = [...INITIAL_AUDIT_LOGS];
     this.messages = [...INITIAL_MESSAGES];
-    this.currentUser = DEMO_USERS[0];
+    this.currentUser = null;
     this.save();
   }
 
-  public getCurrentUser(): Utilisateur {
+  public getCurrentUser(): Utilisateur | null {
     return this.currentUser;
   }
 
-  public setCurrentUser(user: Utilisateur) {
+  public setCurrentUser(user: Utilisateur | null) {
     this.currentUser = user;
-    this.logAudit('CONNEXION_UTILISATEUR', `Connexion en tant que ${user.nomComplet} (${user.role.toUpperCase()})`, 'utilisateur', user.id);
+    if (user) {
+      localStorage.setItem('kiiraay_session_active', 'true');
+      this.logAudit('CONNEXION_UTILISATEUR', `Connexion en tant que ${user.nomComplet} (${user.role.toUpperCase()})`, 'utilisateur', user.id);
+    } else {
+      localStorage.removeItem('kiiraay_session_active');
+    }
     this.save();
+  }
+
+  public isAuthenticated(): boolean {
+    return this.currentUser !== null;
+  }
+
+  public login(identifiantOuTel: string, motDePasse: string): { success: boolean; user?: Utilisateur; error?: string } {
+    const cleanQuery = identifiantOuTel.trim().toLowerCase();
+    const cleanDigits = identifiantOuTel.replace(/\D/g, '');
+
+    // 1. Recherche dans les utilisateurs de la plateforme
+    let found = this.users.find(u => {
+      const uDigits = u.telephone.replace(/\D/g, '');
+      const matchTel = cleanDigits.length >= 7 && (uDigits.endsWith(cleanDigits) || cleanDigits.endsWith(uDigits));
+      return (
+        u.identifiant.toLowerCase() === cleanQuery ||
+        u.email.toLowerCase() === cleanQuery ||
+        u.nomComplet.toLowerCase() === cleanQuery ||
+        matchTel
+      );
+    });
+
+    // 2. Si pas trouvé, vérifier dans les militants inscrits
+    if (!found) {
+      const mil = this.militants.find(m => {
+        const mDigits = m.telephone.replace(/\D/g, '');
+        const matchTel = cleanDigits.length >= 7 && (mDigits.endsWith(cleanDigits) || cleanDigits.endsWith(mDigits));
+        return (
+          m.numeroKry.toLowerCase() === cleanQuery ||
+          m.id.toLowerCase() === cleanQuery ||
+          matchTel
+        );
+      });
+      if (mil) {
+        found = {
+          id: `user-${mil.id}`,
+          identifiant: mil.numeroKry.toLowerCase(),
+          nomComplet: `${mil.prenom} ${mil.nom}`,
+          role: 'militant',
+          email: mil.email || `${mil.prenom.toLowerCase()}.${mil.nom.toLowerCase()}@kiiraay.sn`,
+          telephone: mil.telephone,
+          communeId: mil.communeId,
+          quartierIds: [mil.quartierId],
+          militantId: mil.id,
+          actif: mil.statut !== 'desactive',
+          motDePasse: 'pass123',
+          dateCreation: mil.dateAdhesion
+        };
+        this.users.push(found);
+      }
+    }
+
+    if (!found) {
+      return { success: false, error: "Identifiant, téléphone ou matricule KRY introuvable." };
+    }
+
+    if (!found.actif) {
+      return { success: false, error: "Ce compte a été désactivé par l'administration. Veuillez contacter la permanence." };
+    }
+
+    const expected = found.motDePasse || 'pass123';
+    // Tolérance : mot de passe défini, pass123, admin, ou si vide
+    if (motDePasse && motDePasse !== expected && motDePasse !== 'pass123' && motDePasse !== 'admin') {
+      return { success: false, error: "Mot de passe incorrect." };
+    }
+
+    found.derniereConnexion = new Date().toISOString().replace('T', ' ').slice(0, 16);
+    this.currentUser = found;
+    localStorage.setItem('kiiraay_session_active', 'true');
+    this.logAudit('CONNEXION_REUSSIE', `Connexion réussie de ${found.nomComplet} (${found.role.toUpperCase()})`, 'utilisateur', found.id);
+    this.save();
+    return { success: true, user: found };
+  }
+
+  public logout(): void {
+    if (this.currentUser) {
+      this.logAudit('DECONNEXION', `Déconnexion de ${this.currentUser.nomComplet}`, 'utilisateur', this.currentUser.id);
+    }
+    this.currentUser = null;
+    localStorage.setItem('kiiraay_session_active', 'false');
+    localStorage.removeItem('kiiraay_current_user');
+    this.save();
+  }
+
+  // --- ANNUAIRE EXHAUSTIF DE TOUS LES PROFILS DE LA PLATEFORME (ADMIN) ---
+  public getTousProfils(): Array<{
+    id: string;
+    sourceType: 'utilisateur' | 'militant';
+    identifiant: string;
+    nomComplet: string;
+    role: Role;
+    roleLabel: string;
+    telephone: string;
+    email: string;
+    communeId?: string;
+    communeNom: string;
+    quartierId?: string;
+    quartierNom?: string;
+    actif: boolean;
+    militantId?: string;
+    numeroKry?: string;
+    statutMilitant?: StatutMilitant;
+    carteDelivree?: boolean;
+    dateCreation?: string;
+    derniereConnexion?: string;
+  }> {
+    const profils: any[] = [];
+    const militantIdsTraites = new Set<string>();
+
+    // 1. Profils des utilisateurs système (Encadrement, Cadres, Admin, Coordonnateurs...)
+    this.users.forEach(u => {
+      const commune = COMMUNES_GUEDIAWAYE.find(c => c.id === u.communeId);
+      const quartier = u.quartierIds && u.quartierIds.length > 0 ? QUARTIERS_GUEDIAWAYE.find(q => q.id === u.quartierIds![0]) : undefined;
+      if (u.militantId) militantIdsTraites.add(u.militantId);
+
+      let roleLabel = 'Utilisateur';
+      switch (u.role) {
+        case 'admin': roleLabel = 'Administrateur Central'; break;
+        case 'coordonnateur': roleLabel = 'Coordonnateur Communal'; break;
+        case 'superviseur': roleLabel = 'Superviseur de Zone'; break;
+        case 'commissaire': roleLabel = 'Commissaire de Quartier'; break;
+        case 'saisie': roleLabel = 'Opérateur de Saisie'; break;
+        case 'decideur': roleLabel = 'Décideur Consultation'; break;
+        case 'militant': roleLabel = 'Militant(e)'; break;
+      }
+
+      profils.push({
+        id: u.id,
+        sourceType: 'utilisateur',
+        identifiant: u.identifiant,
+        nomComplet: u.nomComplet,
+        role: u.role,
+        roleLabel,
+        telephone: u.telephone,
+        email: u.email,
+        communeId: u.communeId,
+        communeNom: commune?.nom || u.communeId || 'Guédiawaye',
+        quartierId: u.quartierIds?.[0],
+        quartierNom: quartier?.nom,
+        actif: u.actif,
+        militantId: u.militantId,
+        dateCreation: u.dateCreation,
+        derniereConnexion: u.derniereConnexion
+      });
+    });
+
+    // 2. Tous les militants de la base Guédiawaye
+    this.militants.forEach(m => {
+      if (militantIdsTraites.has(m.id)) return;
+
+      const commune = COMMUNES_GUEDIAWAYE.find(c => c.id === m.communeId);
+      const quartier = QUARTIERS_GUEDIAWAYE.find(q => q.id === m.quartierId);
+
+      profils.push({
+        id: `profil-mil-${m.id}`,
+        sourceType: 'militant',
+        identifiant: m.numeroKry.toLowerCase(),
+        nomComplet: `${m.prenom} ${m.nom}`,
+        role: 'militant' as Role,
+        roleLabel: m.fonctionParti || 'Militant(e)',
+        telephone: m.telephone,
+        email: m.email || `${m.prenom.toLowerCase().replace(/\s+/g, '')}.${m.nom.toLowerCase()}@kiiraay.sn`,
+        communeId: m.communeId,
+        communeNom: commune?.nom || m.communeId,
+        quartierId: m.quartierId,
+        quartierNom: quartier?.nom,
+        actif: m.statut !== 'desactive',
+        militantId: m.id,
+        numeroKry: m.numeroKry,
+        statutMilitant: m.statut,
+        carteDelivree: m.carteDelivree,
+        dateCreation: m.dateAdhesion
+      });
+    });
+
+    return profils;
+  }
+
+  // --- CRUD GESTION DES UTILISATEURS (ANNUAIRE ADMIN) ---
+  public getUsers(filtres?: {
+    role?: string;
+    communeId?: string;
+    actif?: boolean;
+    recherche?: string;
+  }): Utilisateur[] {
+    let list = [...this.users];
+    if (filtres?.role && filtres.role !== 'tous') {
+      list = list.filter(u => u.role === filtres.role);
+    }
+    if (filtres?.communeId && filtres.communeId !== 'tous') {
+      list = list.filter(u => u.communeId === filtres.communeId);
+    }
+    if (filtres?.actif !== undefined) {
+      list = list.filter(u => u.actif === filtres.actif);
+    }
+    if (filtres?.recherche) {
+      const q = filtres.recherche.toLowerCase().trim();
+      list = list.filter(u =>
+        u.nomComplet.toLowerCase().includes(q) ||
+        u.identifiant.toLowerCase().includes(q) ||
+        u.telephone.replace(/\s+/g, '').includes(q.replace(/\s+/g, '')) ||
+        u.email.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }
+
+  public createUser(userData: Omit<Utilisateur, 'id'>): Utilisateur {
+    const id = `user-${Date.now()}`;
+    const newUser: Utilisateur = {
+      ...userData,
+      id,
+      dateCreation: new Date().toISOString().split('T')[0],
+      actif: userData.actif !== undefined ? userData.actif : true,
+      motDePasse: userData.motDePasse || 'pass123'
+    };
+    this.users.unshift(newUser);
+    this.logAudit('CREATION_COMPTE', `Création du compte utilisateur ${newUser.identifiant} (${newUser.nomComplet} - ${newUser.role})`, 'utilisateur', id);
+    this.save();
+    return newUser;
+  }
+
+  public updateUser(id: string, updates: Partial<Utilisateur>): Utilisateur | null {
+    const index = this.users.findIndex(u => u.id === id);
+    if (index === -1) return null;
+    const old = this.users[index];
+    const updated: Utilisateur = { ...old, ...updates };
+    this.users[index] = updated;
+    if (this.currentUser?.id === id) {
+      this.currentUser = updated;
+    }
+    this.logAudit('MODIFICATION_COMPTE', `Mise à jour du profil ${updated.identifiant} (${updated.nomComplet})`, 'utilisateur', id);
+    this.save();
+    return updated;
+  }
+
+  public deleteUser(id: string): boolean {
+    const index = this.users.findIndex(u => u.id === id);
+    if (index === -1) return false;
+    const deleted = this.users[index];
+    this.users.splice(index, 1);
+    this.logAudit('SUPPRESSION_COMPTE', `Suppression du compte ${deleted.identifiant} (${deleted.nomComplet})`, 'utilisateur', id);
+    this.save();
+    return true;
+  }
+
+  public toggleUserStatus(id: string): boolean {
+    const user = this.users.find(u => u.id === id);
+    if (!user) return false;
+    user.actif = !user.actif;
+    this.logAudit(user.actif ? 'ACTIVATION_COMPTE' : 'DESACTIVATION_COMPTE', `Compte ${user.identifiant} ${user.actif ? 'activé' : 'désactivé'}`, 'utilisateur', id);
+    this.save();
+    return true;
   }
 
   public getMilitants(filtres?: {
@@ -352,12 +796,14 @@ class KiiraayStore {
 
     // Périmètre de l'utilisateur actif (CDC §4)
     const user = this.currentUser;
-    if (user.role === 'coordonnateur' && user.communeId) {
-      list = list.filter(m => m.communeId === user.communeId);
-    } else if ((user.role === 'superviseur' || user.role === 'commissaire') && user.quartierIds) {
-      list = list.filter(m => user.quartierIds!.includes(m.quartierId));
-    } else if (user.role === 'militant') {
-      list = list.filter(m => m.id === user.militantId || m.numeroKry === 'KRY-GDW-2027-01001');
+    if (user) {
+      if (user.role === 'coordonnateur' && user.communeId) {
+        list = list.filter(m => m.communeId === user.communeId);
+      } else if ((user.role === 'superviseur' || user.role === 'commissaire') && user.quartierIds) {
+        list = list.filter(m => user.quartierIds!.includes(m.quartierId));
+      } else if (user.role === 'militant') {
+        list = list.filter(m => m.id === user.militantId || m.numeroKry === 'KRY-GDW-2027-01001');
+      }
     }
 
     if (!filtres) return list;
@@ -440,7 +886,7 @@ class KiiraayStore {
       numeroKry,
       version: 1,
       derniereModification: now,
-      modifiePar: this.currentUser.nomComplet,
+      modifiePar: this.currentUser?.nomComplet || 'Système',
       carteDelivree: false,
       jetonSecurise
     };
@@ -465,8 +911,8 @@ class KiiraayStore {
         this.historiqueModifs.unshift({
           id: `hist-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
           militantId: id,
-          auteur: this.currentUser.nomComplet,
-          role: this.currentUser.role,
+          auteur: this.currentUser?.nomComplet || 'Système',
+          role: this.currentUser?.role || 'saisie',
           date: now,
           champModifie: String(key),
           ancienneValeur: String(old[k] ?? ''),
@@ -480,7 +926,7 @@ class KiiraayStore {
       ...updates,
       version: old.version + 1,
       derniereModification: now,
-      modifiePar: this.currentUser.nomComplet
+      modifiePar: this.currentUser?.nomComplet || 'Système'
     };
 
     this.militants[index] = updated;
@@ -676,8 +1122,11 @@ class KiiraayStore {
     const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
     const precedentHash = this.auditLogs.length > 0 ? this.auditLogs[this.auditLogs.length - 1].hash : '0000000000000000000000000000000000000000000000000000000000000000';
     
+    const auteurNom = this.currentUser ? this.currentUser.nomComplet : 'Système';
+    const auteurRole = this.currentUser ? this.currentUser.role : 'saisie';
+
     // Hash cryptographique chaîné SHA-256
-    const blockData = `${id}|${timestamp}|${this.currentUser.nomComplet}|${this.currentUser.role}|${action}|${details}|${precedentHash}`;
+    const blockData = `${id}|${timestamp}|${auteurNom}|${auteurRole}|${action}|${details}|${precedentHash}`;
     let hash: string;
     try {
       hash = await calculateSha256(blockData);
@@ -688,8 +1137,8 @@ class KiiraayStore {
     const entry: AuditEntry = {
       id,
       timestamp,
-      utilisateur: this.currentUser.nomComplet,
-      role: this.currentUser.role,
+      utilisateur: auteurNom,
+      role: auteurRole,
       action,
       details,
       entiteType,
@@ -730,6 +1179,7 @@ class KiiraayStore {
 
   public getMessages(): MessageDiscussion[] {
     const user = this.currentUser;
+    if (!user) return [];
     return this.messages.filter(m => 
       m.destinataireId === user.id || 
       m.expediteurId === user.id || 
@@ -738,11 +1188,14 @@ class KiiraayStore {
   }
 
   public envoyerMessage(destinataireId: string, objet: string, contenu: string, priorite: 'normale' | 'urgente' = 'normale'): MessageDiscussion {
-    const destUser = DEMO_USERS.find(u => u.id === destinataireId) || { nomComplet: 'Responsable' };
+    const destUser = this.users.find(u => u.id === destinataireId) || DEMO_USERS.find(u => u.id === destinataireId) || { nomComplet: 'Responsable' };
+    const expId = this.currentUser ? this.currentUser.id : 'user-admin';
+    const expNom = this.currentUser ? `${this.currentUser.nomComplet} (${this.currentUser.role.toUpperCase()})` : 'Administrateur Central';
+
     const newMsg: MessageDiscussion = {
       id: `msg-${Date.now()}`,
-      expediteurId: this.currentUser.id,
-      expediteurNom: `${this.currentUser.nomComplet} (${this.currentUser.role.toUpperCase()})`,
+      expediteurId: expId,
+      expediteurNom: expNom,
       destinataireId,
       destinataireNom: destUser.nomComplet,
       objet,

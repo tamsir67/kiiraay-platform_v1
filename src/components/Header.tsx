@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Utilisateur } from '../types';
 import { DEMO_USERS } from '../data/referentiel';
 import { KiiraayLogo } from './KiiraayLogo';
-import { ChevronDown, Check, UserPlus, Menu, X } from 'lucide-react';
+import { ChevronDown, Check, UserPlus, Menu, X, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   currentUser: Utilisateur;
@@ -10,6 +10,7 @@ interface HeaderProps {
   activeTabTitle: string;
   onOpenInscription?: () => void;
   onOpenInstallModal?: () => void;
+  onLogout?: () => void;
   mobileMenuOpen?: boolean;
   onToggleMobileMenu?: () => void;
 }
@@ -20,6 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeTabTitle,
   onOpenInscription,
   onOpenInstallModal,
+  onLogout,
   mobileMenuOpen,
   onToggleMobileMenu
 }) => {
@@ -224,12 +226,39 @@ export const Header: React.FC<HeaderProps> = ({
                   })}
                 </div>
 
-                <div className="px-4 py-2 border-t border-slate-100 bg-slate-50/60 text-[11px] text-slate-500">
-                  Connecté : <span className="font-semibold text-slate-700">{currentUser.email}</span>
+                <div className="px-4 py-2 border-t border-slate-100 bg-slate-50/60 text-[11px] text-slate-500 flex items-center justify-between">
+                  <span className="truncate">Session : <b className="text-slate-700">{currentUser.identifiant}</b></span>
                 </div>
+
+                {onLogout && (
+                  <div className="p-2 border-t border-slate-100 bg-slate-50">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOuvert(false);
+                        onLogout();
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-lg transition-colors border border-rose-200"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Se déconnecter de la plateforme</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
+
+          {/* Bouton déconnexion rapide visible sur desktop et mobile */}
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="p-1.5 sm:p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-200"
+              title="Se déconnecter (Fermer la session)"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </header>

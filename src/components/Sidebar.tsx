@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -13,6 +12,8 @@ import {
   RotateCcw,
   UserPlus,
   Clock,
+  PhoneCall,
+  LogOut,
   X
 } from 'lucide-react';
 import { Utilisateur } from '../types';
@@ -24,6 +25,7 @@ export type TabId =
   | 'carte' 
   | 'territoires' 
   | 'responsables' 
+  | 'annuaire'
   | 'qualite' 
   | 'import_export' 
   | 'audit' 
@@ -40,6 +42,7 @@ interface SidebarProps {
   onResetData: () => void;
   onOpenInscription?: () => void;
   onOpenInstallModal?: () => void;
+  onLogout?: () => void;
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
 }
@@ -54,6 +57,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onResetData,
   onOpenInscription,
   onOpenInstallModal,
+  onLogout,
   isMobileOpen = false,
   onCloseMobile
 }) => {
@@ -72,6 +76,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'carte', label: 'Cartographie', icon: Map, visible: !isMilitant },
     { id: 'territoires', label: 'Territoires & Quartiers', icon: MapPin, visible: !isMilitant },
     { id: 'responsables', label: 'Chaîne de responsabilité', icon: UserCheck, visible: !isMilitant },
+    { 
+      id: 'annuaire', 
+      label: 'Annuaire & WhatsApp', 
+      icon: PhoneCall, 
+      visible: currentUser.role === 'admin' 
+    },
     { id: 'qualite', label: 'Qualité des données', icon: ShieldAlert, badge: nbAlertes, visible: !isMilitant && currentUser.role !== 'decideur' },
     { id: 'import_export', label: 'Import / Export', icon: FileSpreadsheet, visible: !isMilitant && currentUser.role !== 'decideur' },
     { id: 'audit', label: 'Journal d’audit SHA-256', icon: FileLock2, visible: currentUser.role === 'admin' },
@@ -198,17 +208,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         )}
 
-        {!isMilitant && (
+        {!isMilitant && currentUser.role === 'admin' && (
           <button
             onClick={() => {
               onResetData();
               if (onCloseMobile) onCloseMobile();
             }}
-            className="w-full flex items-center justify-center gap-2 px-3 py-1.5 text-[10px] font-semibold text-white/80 hover:text-white bg-white/10 hover:bg-white/15 rounded-lg transition-colors border border-white/10"
-            title="Réinitialiser la base locale aux valeurs d'usine"
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold text-white/80 hover:text-white bg-white/10 hover:bg-white/15 rounded-lg transition-colors border border-white/10"
+            title="Réinitialiser la base locale"
           >
             <RotateCcw className="w-3 h-3 text-sky-200" />
             <span>Réinitialiser les données</span>
+          </button>
+        )}
+
+        {onLogout && (
+          <button
+            onClick={() => {
+              onLogout();
+              if (onCloseMobile) onCloseMobile();
+            }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-[11px] font-bold text-rose-100 bg-rose-950/40 hover:bg-rose-900/60 rounded-xl transition-colors border border-rose-400/30 shadow-xs"
+            title="Se déconnecter de votre compte"
+          >
+            <LogOut className="w-3.5 h-3.5 text-rose-300" />
+            <span>Se déconnecter</span>
           </button>
         )}
 

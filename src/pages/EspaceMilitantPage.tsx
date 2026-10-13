@@ -19,7 +19,8 @@ import {
   Calendar,
   Phone,
   Compass,
-  Loader2
+  Loader2,
+  LogOut
 } from 'lucide-react';
 import L from 'leaflet';
 
@@ -30,6 +31,7 @@ interface EspaceMilitantPageProps {
   onNavigateTab?: (tab: any) => void;
   onOpenInscription?: () => void;
   onOpenInstallModal?: () => void;
+  onLogout?: () => void;
 }
 
 export const EspaceMilitantPage: React.FC<EspaceMilitantPageProps> = ({
@@ -37,7 +39,8 @@ export const EspaceMilitantPage: React.FC<EspaceMilitantPageProps> = ({
   currentUser,
   onOpenCardModal,
   onOpenInscription,
-  onOpenInstallModal
+  onOpenInstallModal,
+  onLogout
 }) => {
   const commune = COMMUNES_GUEDIAWAYE.find(c => c.id === militant.communeId);
   const quartier = QUARTIERS_GUEDIAWAYE.find(q => q.id === militant.quartierId);
@@ -198,6 +201,17 @@ export const EspaceMilitantPage: React.FC<EspaceMilitantPageProps> = ({
             <CreditCard className="w-4 h-4 text-rose-300" />
             <span>Afficher ma Carte Numérique</span>
           </button>
+
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white font-bold text-xs shadow-md transition-colors border border-rose-400/40"
+              title="Se déconnecter de votre espace"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Se déconnecter</span>
+            </button>
+          )}
         </div>
       </div>
 

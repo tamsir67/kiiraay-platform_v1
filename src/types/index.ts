@@ -116,6 +116,9 @@ export interface Utilisateur {
   militantId?: string; // Si compte militant
   actif: boolean;
   avatar?: string;
+  motDePasse?: string;
+  dateCreation?: string;
+  derniereConnexion?: string;
 }
 
 export interface AuditEntry {

@@ -17,6 +17,8 @@ import { ImportExportPage } from './pages/ImportExportPage';
 import { AuditPage } from './pages/AuditPage';
 import { MessageriePage } from './pages/MessageriePage';
 import { EspaceMilitantPage } from './pages/EspaceMilitantPage';
+import { AnnuairePage } from './pages/AnnuairePage';
+import { LoginPage } from './pages/LoginPage';
 
 import { CarteAdhesionModal } from './components/CarteAdhesionModal';
 import { PublicVerifyModal } from './components/PublicVerifyModal';
@@ -49,7 +51,7 @@ export default function App() {
   const tousQuartiers = store.getQuartiers();
 
   const [activeTab, setActiveTab] = useState<TabId>(
-    currentUser.role === 'militant' ? 'espace_militant' : 'dashboard'
+    currentUser?.role === 'militant' ? 'espace_militant' : 'dashboard'
   );
 
   // Filtre initial de commune (depuis clic sur dashboard)
@@ -74,7 +76,7 @@ export default function App() {
 
   // Verrouillage de sécurité : le rôle militant ne peut STRICTEMENT accéder qu'à son propre espace
   useEffect(() => {
-    if (currentUser.role === 'militant') {
+    if (currentUser?.role === 'militant') {
       if (activeTab !== 'espace_militant') {
         setActiveTab('espace_militant');
       }
@@ -82,12 +84,15 @@ export default function App() {
         setSelectedMilitantId(null);
       }
     }
-  }, [currentUser.role, activeTab, selectedMilitantId]);
+  }, [currentUser?.role, activeTab, selectedMilitantId]);
 
   // Sélecteur d'onglet sécurisé avec contrôle strict des rôles
   const handleSelectTab = (tab: TabId) => {
-    if (currentUser.role === 'militant' && tab !== 'espace_militant') {
+    if (currentUser?.role === 'militant' && tab !== 'espace_militant') {
       return; // Bloqué pour le militant (accès interdit aux autres espaces)
+    }
+    if (currentUser?.role !== 'admin' && (tab === 'annuaire' || tab === 'audit')) {
+      return; // Réservé à l'administrateur
     }
     setActiveTab(tab);
     setSelectedMilitantId(null);
@@ -160,7 +165,7 @@ export default function App() {
   };
 
   const handleExportCsv = () => {
-    const isDecideur = currentUser.role === 'decideur';
+    const isDecideur = currentUser?.role === 'decideur';
     const headers = [
       'N° Militant',
       'Nom',
@@ -203,12 +208,12 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `kiiraay_militants_guediawaye_${currentUser.role}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `kiiraay_militants_guediawaye_${currentUser?.role || 'admin'}_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    store.logAudit('EXPORT_CSV', `Export de ${militants.length} fiches militantes par ${currentUser.nomComplet}`, 'export');
+    store.logAudit('EXPORT_CSV', `Export de ${militants.length} fiches militantes par ${currentUser?.nomComplet || 'Utilisateur'}`, 'export');
   };
 
   const handleImportMilitants = (nouveaux: any[]) => {
@@ -225,10 +230,6 @@ export default function App() {
     }
   };
 
-  // Trouver le militant courant si sélectionné
-  const currentSelectedMilitant = selectedMilitantId ? store.getMilitantById(selectedMilitantId) : null;
-  const myMilitant = currentUser.militantId ? store.getMilitantById(currentUser.militantId) : militants[0];
-
   const getTabTitle = (tab: TabId) => {
     switch (tab) {
       case 'dashboard': return 'Tableau de bord';
@@ -236,6 +237,7 @@ export default function App() {
       case 'carte': return 'Cartographie territoriale';
       case 'territoires': return 'Territoires & Quartiers';
       case 'responsables': return 'Chaîne de responsabilité';
+      case 'annuaire': return 'Annuaire des Profils & WhatsApp';
       case 'qualite': return 'Qualité des données & Doublons';
       case 'import_export': return 'Import / Export';
       case 'audit': return 'Journal d’audit SHA-256';
@@ -243,6 +245,58 @@ export default function App() {
       case 'espace_militant': return 'Espace Militant';
     }
   };
+
+  // Écran de connexion si aucun utilisateur n'est connecté
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-slate-900">
+        <LoginPage
+          onLoginSuccess={(user) => {
+            store.setCurrentUser(user);
+            if (user.role === 'militant') {
+              setActiveTab('espace_militant');
+            } else {
+              setActiveTab('dashboard');
+            }
+          }}
+          onOpenInscription={() => setInscriptionModalOpen(true)}
+          onOpenVerifyModal={() => setVerifyModalState({ open: true, jeton: '' })}
+          onOpenInstallModal={() => setInstallModalOpen(true)}
+        />
+
+        {/* Modal d'auto-inscription citoyenne en ligne */}
+        {inscriptionModalOpen && (
+          <InscriptionMilitantModal
+            quartiers={tousQuartiers}
+            onInscrire={(data) => {
+              const created = store.inscrireMilitant(data);
+              return created;
+            }}
+            onAccessEspace={handleAccessEspaceMilitant}
+            onClose={() => setInscriptionModalOpen(false)}
+          />
+        )}
+
+        {/* Modal de vérification publique simulée */}
+        {verifyModalState.open && (
+          <PublicVerifyModal
+            militant={verifyModalState.militant}
+            jeton={verifyModalState.jeton}
+            onClose={() => setVerifyModalState({ open: false, jeton: '' })}
+          />
+        )}
+
+        {/* Modal d'installation PWA sur mobile et tablette */}
+        {installModalOpen && (
+          <InstallAppModal onClose={() => setInstallModalOpen(false)} />
+        )}
+      </div>
+    );
+  }
+
+  // Trouver le militant courant si sélectionné
+  const currentSelectedMilitant = selectedMilitantId ? store.getMilitantById(selectedMilitantId) : null;
+  const myMilitant = currentUser.militantId ? store.getMilitantById(currentUser.militantId) : militants[0];
 
   const nbEnAttente = militants.filter(m => m.statut === 'en_attente').length;
   const nbAlertes = doublons.length + tousQuartiers.filter(q => !q.commissaire || q.commissaire === 'Non pourvu').length;
@@ -257,6 +311,9 @@ export default function App() {
         activeTabTitle={selectedMilitantId ? 'Fiche Militant' : getTabTitle(activeTab)}
         onOpenInscription={() => setInscriptionModalOpen(true)}
         onOpenInstallModal={() => setInstallModalOpen(true)}
+        onLogout={() => {
+          store.logout();
+        }}
         mobileMenuOpen={mobileMenuOpen}
         onToggleMobileMenu={() => setMobileMenuOpen(v => !v)}
       />
@@ -273,6 +330,9 @@ export default function App() {
           onResetData={handleResetData}
           onOpenInscription={() => setInscriptionModalOpen(true)}
           onOpenInstallModal={() => setInstallModalOpen(true)}
+          onLogout={() => {
+            store.logout();
+          }}
           isMobileOpen={mobileMenuOpen}
           onCloseMobile={() => setMobileMenuOpen(false)}
         />
@@ -347,6 +407,10 @@ export default function App() {
                 <ResponsablesPage currentUser={currentUser} />
               )}
 
+              {activeTab === 'annuaire' && (
+                <AnnuairePage currentUser={currentUser} />
+              )}
+
               {activeTab === 'qualite' && (
                 <QualitePage
                   militants={militants}
@@ -387,6 +451,9 @@ export default function App() {
                   }}
                   onOpenInscription={() => setInscriptionModalOpen(true)}
                   onOpenInstallModal={() => setInstallModalOpen(true)}
+                  onLogout={() => {
+                    store.logout();
+                  }}
                 />
               )}
             </>
